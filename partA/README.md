@@ -1,4 +1,3 @@
-# F.CSA311-lab11
 1.Мэдээллийн далдлалт зөрчил — db_conn, users_arr public байна. Доторх хэрэгжилтийн дэлгэрэнгүй мэдээлэл гадагш гарч байна.
 2.Boolean flag abuse — do_user_op(flag: number). Нэг функц дөрвөн өөр үйлдэл хийж байна. 4 тусдаа метод байх ёстой.
 3.Нэршлийн алдаа — usr_mgr, get_u, find нь утгагүй товчлол. UserManager, getUserById, searchUsers байх ёстой.
