@@ -34,7 +34,7 @@ export class LFUCache<K, V> implements Cache<K, V> {
   } else {
     if (this.keyMap.size >= this.capacity) {
       const minSet = this.freqMap.get(this.minFreq)!;
-      const evictKey = minSet.values().next().value as K;  // <- as K нэмэх
+      const evictKey = minSet.values().next().value as K;  
       minSet.delete(evictKey);
       this.keyMap.delete(evictKey);
     }
