@@ -1,4 +1,8 @@
 import { Cache } from './Cache';
+import { LRUCache } from '../impl/LRUCache';
+import { LFUCache } from '../impl/LFUCache';
+import { TTLCache } from '../impl/TTLCache';
+import { CacheException } from './CacheException';
 
 export enum CacheType {
   LRU = 'LRU',
@@ -7,25 +11,22 @@ export enum CacheType {
 }
 
 export interface CacheOptions {
-  /** Максимум элементийн тоо */
   capacity: number;
-  /** Амьдрах хугацаа мс-ээр — зөвхөн TTL кэшид */
   ttl?: number;
 }
 
-/**
- * Cache үүсгэх Factory.
- * Concrete класс гадагш гаргахгүй, зөвхөн Cache интерфейсээр ажиллана.
- */
 export class CacheFactory {
-  /**
-   * Шинэ cache үүсгэнэ.
-   * @param type - Cache-ийн төрөл (LRU / LFU / TTL)
-   * @param options - Тохиргоо
-   * @returns Cache интерфейс
-   */
   static create<K, V>(type: CacheType, options: CacheOptions): Cache<K, V> {
-    // 3-р өдөр хэрэгжилтүүдийг холбоно
-    throw new Error('Not implemented yet');
+    switch (type) {
+      case CacheType.LRU:
+        return new LRUCache<K, V>(options.capacity);
+      case CacheType.LFU:
+        return new LFUCache<K, V>(options.capacity);
+      case CacheType.TTL:
+        if (!options.ttl) throw new CacheException('TTL option required');
+        return new TTLCache<K, V>(options.capacity, options.ttl);
+      default:
+        throw new CacheException(`Unknown cache type: ${type}`);
+    }
   }
 }
