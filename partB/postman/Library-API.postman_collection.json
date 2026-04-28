@@ -1,0 +1,148 @@
+{
+  "info": {
+    "name": "Library API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "GET all books",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has data array', () => { const j = pm.response.json(); pm.expect(j.data).to.be.an('array'); });"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/books" }
+        },
+        {
+          "name": "POST create book",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('Has id', () => pm.expect(pm.response.json().id).to.exist);",
+            "pm.collectionVariables.set('bookId', pm.response.json().id);"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/books",
+            "body": { "mode": "raw", "raw": "{\"title\": \"Test Book\", \"author\": \"Test Author\", \"isbn\": \"123-456\"}" }
+          }
+        },
+        {
+          "name": "GET book by id",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Correct id', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('bookId')));"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/books/{{bookId}}" }
+        },
+        {
+          "name": "GET book not found (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/books/nonexistent_id" }
+        },
+        {
+          "name": "POST book missing fields (400)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/books",
+            "body": { "mode": "raw", "raw": "{\"title\": \"No Author\"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Members",
+      "item": [
+        {
+          "name": "GET all members",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/members" }
+        },
+        {
+          "name": "POST create member",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.collectionVariables.set('memberId', pm.response.json().id);"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/members",
+            "body": { "mode": "raw", "raw": "{\"name\": \"Test User\", \"email\": \"test@example.com\"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Loans",
+      "item": [
+        {
+          "name": "POST create loan",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('Has dueDate', () => pm.expect(pm.response.json().dueDate).to.exist);",
+            "pm.collectionVariables.set('loanId', pm.response.json().id);"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/loans",
+            "body": { "mode": "raw", "raw": "{\"bookId\": \"{{bookId}}\", \"memberId\": \"{{memberId}}\"}" }
+          }
+        },
+        {
+          "name": "POST loan book not available (409)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 409', () => pm.response.to.have.status(409));"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/loans",
+            "body": { "mode": "raw", "raw": "{\"bookId\": \"{{bookId}}\", \"memberId\": \"{{memberId}}\"}" }
+          }
+        },
+        {
+          "name": "PUT renew loan",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Renewed true', () => pm.expect(pm.response.json().renewed).to.be.true);"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "PUT", "url": "{{baseUrl}}/loans/{{loanId}}/renew" }
+        },
+        {
+          "name": "PUT renew again (409)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 409', () => pm.response.to.have.status(409));"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "PUT", "url": "{{baseUrl}}/loans/{{loanId}}/renew" }
+        },
+        {
+          "name": "PUT return loan",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has returnedAt', () => pm.expect(pm.response.json().returnedAt).to.exist);"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "PUT", "url": "{{baseUrl}}/loans/{{loanId}}/return" }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "bookId", "value": "" },
+    { "key": "memberId", "value": "" },
+    { "key": "loanId", "value": "" }
+  ]
+}

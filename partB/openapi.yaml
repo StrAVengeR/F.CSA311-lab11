@@ -1,0 +1,414 @@
+openapi: 3.0.3
+info:
+  title: Library Management API
+  description: Номын сангийн удирдлагын REST API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Local server
+
+paths:
+  /books:
+    get:
+      summary: Бүх номын жагсаалт
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: author
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+
+    post:
+      summary: Шинэ ном нэмэх
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookInput'
+      responses:
+        '201':
+          description: Ном үүссэн
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /books/{id}:
+    get:
+      summary: Нэг ном авах
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Ном шинэчлэх
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookInput'
+      responses:
+        '200':
+          description: Шинэчлэгдсэн
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Ном устгах
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Устгагдсан
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /members:
+    get:
+      summary: Бүх гишүүдийн жагсаалт
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Member'
+
+    post:
+      summary: Шинэ гишүүн нэмэх
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMemberInput'
+      responses:
+        '201':
+          description: Гишүүн үүссэн
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /members/{id}:
+    get:
+      summary: Нэг гишүүн авах
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Гишүүн шинэчлэх
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMemberInput'
+      responses:
+        '200':
+          description: Шинэчлэгдсэн
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Гишүүн устгах
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Устгагдсан
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /loans:
+    get:
+      summary: Бүх зээлийн жагсаалт
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+
+    post:
+      summary: Ном зээлэх
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bookId:
+                  type: string
+                memberId:
+                  type: string
+      responses:
+        '201':
+          description: Зээл үүссэн
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /loans/{id}/return:
+    put:
+      summary: Ном буцаах
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Буцаагдсан
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /loans/{id}/renew:
+    put:
+      summary: Зээл сунгах (нэг удаа)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Сунгагдсан
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /reservations:
+    get:
+      summary: Бүх захиалгын жагсаалт
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+
+    post:
+      summary: Ном захиалах
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bookId:
+                  type: string
+                memberId:
+                  type: string
+      responses:
+        '201':
+          description: Захиалга үүссэн
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /reservations/{id}:
+    delete:
+      summary: Захиалга цуцлах
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Устгагдсан
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        author:
+          type: string
+        isbn:
+          type: string
+        available:
+          type: boolean
+
+    CreateBookInput:
+      type: object
+      required: [title, author, isbn]
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        isbn:
+          type: string
+
+    Member:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        joinedAt:
+          type: string
+          format: date-time
+
+    CreateMemberInput:
+      type: object
+      required: [name, email]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+
+    Loan:
+      type: object
+      properties:
+        id:
+          type: string
+        bookId:
+          type: string
+        memberId:
+          type: string
+        loanDate:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date-time
+        returnedAt:
+          type: string
+          format: date-time
+        renewed:
+          type: boolean
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+        bookId:
+          type: string
+        memberId:
+          type: string
+        reservedAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: Буруу хүсэлт
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Олдсонгүй
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Зөрчил
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
